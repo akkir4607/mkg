@@ -1,0 +1,100 @@
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: #000;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: opacity 0.5s ease-out;
+}
+
+.preloader--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preloader__content {
+  position: relative;
+  z-index: 2;
+}
+
+.preloader__text {
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #fff;
+  margin: 0;
+  animation: textToBlack 3s ease-in-out forwards;
+  white-space: nowrap;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.preloader__wipe {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  z-index: 1;
+  animation: wipeLeftToRight 3s ease-in-out forwards;
+}
+
+/* Animation: Text fades from white to black */
+@keyframes textToBlack {
+  0% {
+    color: #fff;
+  }
+  60% {
+    color: #fff;
+  }
+  100% {
+    color: #000;
+  }
+}
+
+/* Animation: White screen wipes from left to right */
+@keyframes wipeLeftToRight {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: -100%;
+  }
+  100% {
+    left: 0;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .preloader__text {
+    font-size: clamp(1.5rem, 10vw, 3rem);
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (max-width: 480px) {
+  .preloader__text {
+    font-size: clamp(1.2rem, 12vw, 2.5rem);
+    letter-spacing: 0.05em;
+  }
+}
+
+/* Tablet landscape */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .preloader__text {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+  }
+}
+
+/* Prevent scrolling when preloader is active */
+body.preloader-active {
+  overflow: hidden;
+}
