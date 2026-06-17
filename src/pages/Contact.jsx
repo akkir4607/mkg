@@ -1,11 +1,13 @@
 import React from 'react';
 import './Contact.css';
+import Nav from '../components/Navbar.jsx';
 
 const Contact = () => {
   return (
     <>
       {/* Navbar added */}
-      <Navbarr />
+      {<Nav /> }
+
 
       <div className="contact-container">
         <div className="contact-header">

@@ -140,16 +140,6 @@ function Navbar() {
 
           {/* Right: Actions */}
           <div className={`nav-right ${showNavControls ? 'nav-section--visible' : ''}`}>
-            <a href="/contact" className="nav-icon-btn nav-call-us">
-              <span className="nav-icon-label">Call Us</span>
-            </a>
-
-            <button className="nav-icon-btn" aria-label="Wishlist">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-            </button>
-
             {user ? (
               <div className="user-menu-wrap" ref={userMenuRef}>
                 <button
@@ -182,12 +172,6 @@ function Navbar() {
                       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
                     </svg>
                     My Orders
-                  </button>
-                  <button className="user-dropdown__item">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                    Wishlist
                   </button>
                   <div className="user-dropdown__divider"/>
                   <button className="user-dropdown__item user-dropdown__item--danger" onClick={handleLogout}>
@@ -265,8 +249,7 @@ function Navbar() {
                 </div>
                 <a href="#profile" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.26s' }}>MY PROFILE</a>
                 <a href="#orders" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.3s' }}>MY ORDERS</a>
-                <a href="#wishlist" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.34s' }}>WISHLIST</a>
-                <button className="mobile-menu__link mobile-menu__link--danger" onClick={() => { closeMenu(); handleLogout(); }} style={{ animationDelay: '0.38s' }}>
+                <button className="mobile-menu__link mobile-menu__link--danger" onClick={() => { closeMenu(); handleLogout(); }} style={{ animationDelay: '0.34s' }}>
                   LOGOUT
                 </button>
               </>

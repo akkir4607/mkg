@@ -29,8 +29,15 @@ function Accordion({ title, children, defaultOpen = false, icon = 'chevron' }) {
         {icon === 'plus' ? (
           <span className="lv-acc-plus" aria-hidden="true" />
         ) : (
-          <svg className="lv-acc-chevron" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            className="lv-acc-chevron"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="9 18 15 12 9 6" />
           </svg>
         )}
@@ -43,8 +50,7 @@ function Accordion({ title, children, defaultOpen = false, icon = 'chevron' }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   ProductDetail — Louis Vuitton inspired
-   Reusable across Women/Men/Discover/etc.
+   ProductDetail
 ───────────────────────────────────────────────────────── */
 const ProductDetail = ({ product, onClose }) => {
   const [isActive, setIsActive] = useState(false);
@@ -55,7 +61,11 @@ const ProductDetail = ({ product, onClose }) => {
   const [descExpanded, setDescExpanded] = useState(false);
 
   const timerRef = useRef(null);
+  const successTimerRef = useRef(null);
+  const closeTimerRef = useRef(null);
   const heroRef = useRef(null);
+  const isClosingRef = useRef(false);
+  const didPushState = useRef(false);
 
   const { addToCart } = useContext(CartContext);
   const { toggleWishlist, isInWishlist } = useContext(WishlistContext);
@@ -63,14 +73,58 @@ const ProductDetail = ({ product, onClose }) => {
   const images = product.images || [product.image];
   const total = images.length;
 
-  /* mount + lock scroll */
+  /* ── Animate out then call onClose ── */
+  const triggerClose = useCallback(() => {
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
+    setIsActive(false);
+    clearInterval(timerRef.current);
+    clearTimeout(successTimerRef.current);
+
+    closeTimerRef.current = setTimeout(() => {
+      document.body.style.overflow = '';
+      onClose();
+    }, 550);
+  }, [onClose]);
+
+  /* ── Push history state on mount ── */
+  useEffect(() => {
+    window.history.pushState(
+      { productDetailOpen: true },
+      '',
+      window.location.pathname + window.location.search
+    );
+    didPushState.current = true;
+
+    const handlePopState = () => {
+      didPushState.current = false;
+      triggerClose();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [triggerClose]);
+
+  /* ── Mount animation + lock scroll ── */
   useEffect(() => {
     const t = setTimeout(() => setIsActive(true), 20);
     document.body.style.overflow = 'hidden';
-    return () => { clearTimeout(t); document.body.style.overflow = ''; };
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = '';
+    };
   }, []);
 
-  /* ── auto-rotate every 2 seconds ── */
+  /* ── Cleanup timers ── */
+  useEffect(() => {
+    return () => {
+      clearInterval(timerRef.current);
+      clearTimeout(successTimerRef.current);
+      clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  /* ── Auto-rotate ── */
   const startTimer = useCallback(() => {
     clearInterval(timerRef.current);
     if (total <= 1) return;
@@ -84,29 +138,40 @@ const ProductDetail = ({ product, onClose }) => {
     return () => clearInterval(timerRef.current);
   }, [startTimer]);
 
-  /* close with animation */
-  const handleClose = () => {
-    setIsActive(false);
-    clearInterval(timerRef.current);
-    setTimeout(onClose, 550);
-  };
+  /* ── Close: go back in history OR animate directly ── */
+  const handleClose = useCallback(() => {
+    if (isClosingRef.current) return;
 
-  /* ESC to close */
+    if (didPushState.current) {
+      // history.back() will fire popstate → triggerClose
+      window.history.back();
+    } else {
+      triggerClose();
+    }
+  }, [triggerClose]);
+
+  /* ── ESC to close ── */
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') handleClose(); };
+    const onKey = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [handleClose]);
 
-  /* cart */
+  /* ── Add to cart ── */
   const handleAddToCart = () => {
     if (product.sizes?.length && !selectedSize) {
       alert('Please select a size');
       return;
     }
+
     addToCart({ ...product, selectedColor }, selectedSize || 'OS');
     setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 1800);
+
+    successTimerRef.current = setTimeout(() => {
+      handleClose();
+    }, 1600);
   };
 
   const handleThumbClick = (i) => {
@@ -117,13 +182,13 @@ const ProductDetail = ({ product, onClose }) => {
   if (!product) return null;
 
   const shortDesc = product.description || '';
-  const longDesc = product.longDescription ||
+  const longDesc =
+    product.longDescription ||
     `${shortDesc} Crafted with meticulous attention to detail, this piece embodies the spirit of timeless design — bridging heritage with contemporary relevance. Each element is thoughtfully considered to deliver an unparalleled experience of quality and elegance.`;
 
   return (
     <div className={`lv-page ${isActive ? 'active' : ''}`}>
-
-      {/* ══ LEFT — Image hero with auto-rotate ══ */}
+      {/* ══ LEFT — Image hero ══ */}
       <div className="lv-left" ref={heroRef}>
         <div className="lv-image-stack">
           {images.map((src, i) => (
@@ -140,7 +205,6 @@ const ProductDetail = ({ product, onClose }) => {
           ))}
         </div>
 
-        {/* Image counter */}
         {total > 1 && (
           <div className="lv-counter">
             <span className="lv-counter-num">
@@ -153,7 +217,6 @@ const ProductDetail = ({ product, onClose }) => {
           </div>
         )}
 
-        {/* Progress bar */}
         {total > 1 && (
           <div className="lv-progress">
             {images.map((_, i) => (
@@ -172,12 +235,17 @@ const ProductDetail = ({ product, onClose }) => {
 
       {/* ══ RIGHT — Details panel ══ */}
       <div className="lv-right">
-
-        {/* Top bar with close */}
         <div className="lv-topbar">
           <button className="lv-close" onClick={handleClose} aria-label="Close">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -187,29 +255,29 @@ const ProductDetail = ({ product, onClose }) => {
             onClick={() => toggleWishlist(product)}
             aria-label="Add to wishlist"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24"
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
               fill={isInWishlist(product.id) ? 'currentColor' : 'none'}
-              stroke="currentColor" strokeWidth="1.4">
+              stroke="currentColor"
+              strokeWidth="1.4"
+            >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           </button>
         </div>
 
         <div className="lv-content">
-
-          {/* SKU */}
           {product.sku && <div className="lv-sku">{product.sku}</div>}
 
-          {/* Name */}
           <h1 className="lv-name">{product.name}</h1>
 
-          {/* Price */}
           <div className="lv-price-block">
             <div className="lv-price">{product.price}</div>
             <div className="lv-tax">(M.R.P. incl. of all taxes)</div>
           </div>
 
-          {/* Colours */}
           {product.colors?.length > 0 && (
             <div className="lv-section">
               <div className="lv-section-head">
@@ -217,7 +285,7 @@ const ProductDetail = ({ product, onClose }) => {
                 <span className="lv-section-value">{selectedColor?.name}</span>
               </div>
               <div className="lv-swatches">
-                {product.colors.map(color => (
+                {product.colors.map((color) => (
                   <button
                     key={color.name}
                     className={`lv-swatch ${selectedColor?.name === color.name ? 'selected' : ''}`}
@@ -234,7 +302,6 @@ const ProductDetail = ({ product, onClose }) => {
             </div>
           )}
 
-          {/* Sizes */}
           {product.sizes?.length > 0 && (
             <div className="lv-section">
               <div className="lv-section-head">
@@ -244,7 +311,7 @@ const ProductDetail = ({ product, onClose }) => {
                 )}
               </div>
               <div className="lv-sizes">
-                {product.sizes.map(size => (
+                {product.sizes.map((size) => (
                   <button
                     key={size}
                     className={`lv-size ${selectedSize === size ? 'selected' : ''}`}
@@ -257,7 +324,6 @@ const ProductDetail = ({ product, onClose }) => {
             </div>
           )}
 
-          {/* CTA */}
           <button
             className={`lv-cta ${showSuccess ? 'success' : ''}`}
             onClick={handleAddToCart}
@@ -266,39 +332,72 @@ const ProductDetail = ({ product, onClose }) => {
             <span className="lv-cta-text">
               {showSuccess ? (
                 <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  Added to Bag
+                  Added — Going back…
                 </>
-              ) : 'Add to Bag'}
+              ) : (
+                <>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <path d="M16 10a4 4 0 01-8 0" />
+                  </svg>
+                  Add to Bag
+                </>
+              )}
             </span>
+            {showSuccess && (
+              <span className="lv-cta-progress" aria-hidden="true" />
+            )}
           </button>
 
-          {/* Concierge */}
           <p className="lv-concierge">
-            Our Digital Concierge is available if you have any question on this product.
-            <a href="#contact" className="lv-link"> Contact us</a>
+            Our Digital Concierge is available if you have any question on this
+            product.
+            <a href="#contact" className="lv-link">
+              {' '}
+              Contact us
+            </a>
           </p>
 
-          {/* Description */}
           <div className="lv-desc">
             <p className={`lv-desc-text ${descExpanded ? 'expanded' : ''}`}>
               {longDesc}
             </p>
             <button
               className="lv-read-more"
-              onClick={() => setDescExpanded(v => !v)}
+              onClick={() => setDescExpanded((v) => !v)}
             >
               {descExpanded ? 'Read Less' : 'Read More'}
             </button>
           </div>
 
-          {/* Accordions */}
           <div className="lv-accordions">
             <Accordion title="Find in Store" icon="plus">
-              <p>Locate this product at a boutique near you. Enter your city or pincode to discover availability.</p>
+              <p>
+                Locate this product at a boutique near you. Enter your city or
+                pincode to discover availability.
+              </p>
               <button className="lv-inline-btn">Search Stores →</button>
             </Accordion>
 
@@ -328,7 +427,6 @@ const ProductDetail = ({ product, onClose }) => {
               </ul>
             </Accordion>
           </div>
-
         </div>
       </div>
     </div>

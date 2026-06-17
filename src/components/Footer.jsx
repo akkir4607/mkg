@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Footer.css';
+import contact from '../pages/Contact.jsx';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -26,19 +27,14 @@ const Footer = () => {
           </ul>
           <ul className="footer-links footer-links-secondary">
             <li><a href="/runways">About Loudly Worn</a></li>
-            <li><a href="/campaigns">CAMPAIGNS</a></li>
-            <li><a href="/the-amiri-prize">THE AMIRI PRIZE</a></li>
-            <li><a href="/store-locator">STORE LOCATOR</a></li>
-            <li><a href="/stockists">STOCKISTS</a></li>
+
           </ul>
         </div>
 
         <div className="footer-column">
           <h3 className="footer-heading">CLIENT SERVICES</h3>
           <ul className="footer-links">
-            <li><a href="/privacy-policy">PRIVACY POLICY</a></li>
             <li><a href="/term">TERMS & CONDITIONS</a></li>
-            <li><a href="/shipping-returns">SHIPPING & RETURNS</a></li>
             <li><a href="/faq">FAQS</a></li>
           </ul>
         </div>

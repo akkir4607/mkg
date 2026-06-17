@@ -933,3 +933,40 @@
     image-rendering: -webkit-optimize-contrast;
   }
 }
+/* ── NEW: Success Progress Bar & Updates ───────────────────── */
+
+/* Ensure the parent button is relative so the bar positions correctly */
+.lv-cta {
+  position: relative; 
+  overflow: hidden;
+}
+
+/* The draining progress bar */
+.lv-cta-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 0 0 999px 999px;
+  transform-origin: left center;
+  animation: lvCtaDrain 1.55s linear forwards;
+}
+
+/* Success state color */
+.lv-cta.success {
+  background: #1a5c3a;
+  animation: lvCtaPop 0.5s var(--ease-out-expo);
+  cursor: default;
+}
+
+.lv-cta.success .lv-cta-text {
+  gap: 10px;
+}
+
+/* The drain animation */
+@keyframes lvCtaDrain {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
