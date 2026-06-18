@@ -24,6 +24,11 @@
   --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-spring: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   --transition-elegant: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  
+  /* NEW: Navbar offset variables */
+  --navbar-height: 72px;
+  --navbar-height-mobile: 60px;
+  --navbar-height-small: 54px;
 }
 
 /* ================================
@@ -179,15 +184,16 @@
 }
 
 /* ================================
-   CONTAINER
+   CONTAINER - FIXED FOR NAVBAR
    ================================ */
 .login-container {
   display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100vh - var(--navbar-height));
+  min-height: calc(100dvh - var(--navbar-height));
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--white);
   overflow: hidden;
+  margin-top: var(--navbar-height); /* Push below navbar */
 }
 
 /* ================================
@@ -213,8 +219,8 @@
   max-width: 400px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100vh - var(--navbar-height));
+  min-height: calc(100dvh - var(--navbar-height));
   justify-content: space-between;
   padding: 3rem 0;
 }
@@ -932,12 +938,13 @@
   }
 }
 
-/* Tablet Portrait & Large Phones */
+/* Tablet Portrait & Large Phones - MOBILE NAVBAR OFFSET */
 @media (max-width: 767px) {
   .login-container {
     flex-direction: column;
-    min-height: 100vh;
-    min-height: 100dvh;
+    min-height: calc(100vh - var(--navbar-height-mobile));
+    min-height: calc(100dvh - var(--navbar-height-mobile));
+    margin-top: var(--navbar-height-mobile);
   }
   .login-left {
     order: 2;
@@ -1023,8 +1030,13 @@
   }
 }
 
-/* Small Phones */
+/* Small Phones - SMALLER NAVBAR OFFSET */
 @media (max-width: 480px) {
+  .login-container {
+    min-height: calc(100vh - var(--navbar-height-small));
+    min-height: calc(100dvh - var(--navbar-height-small));
+    margin-top: var(--navbar-height-small);
+  }
   .login-left {
     padding: 1.5rem 1.2rem;
   }
@@ -1109,6 +1121,9 @@
 @media (max-height: 500px) and (orientation: landscape) {
   .login-container {
     flex-direction: row;
+    min-height: calc(100vh - var(--navbar-height-mobile));
+    min-height: calc(100dvh - var(--navbar-height-mobile));
+    margin-top: var(--navbar-height-mobile);
   }
   .login-left {
     order: 1;
@@ -1118,8 +1133,8 @@
   .login-right {
     order: 2;
     flex: 1;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh - var(--navbar-height-mobile));
+    height: calc(100dvh - var(--navbar-height-mobile));
     max-height: none;
   }
   .login-right::after {
@@ -1288,6 +1303,7 @@
     width: 100%;
   }
 }
+
 /* ================================
    LOGGED-IN CARD STYLES
    ================================ */
@@ -1341,6 +1357,7 @@
   word-break: break-all;
   text-align: center;
 }
+
 /* ================================
    OTP VERIFICATION STYLES
    ================================ */
@@ -1503,8 +1520,9 @@
     font-size: 1.1rem;
   }
 }
+
 /* ================================
-   OTP HINT (📬 line below email)
+   OTP HINT
    ================================ */
 .otp-hint {
   font-size: 0.7rem;

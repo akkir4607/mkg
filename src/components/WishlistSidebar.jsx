@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { WishlistContext, CartContext } from '../App'
 import './WishlistSidebar.css'
 
@@ -7,22 +7,52 @@ function WishlistSidebar() {
   const { addToCart } = useContext(CartContext)
   const [isOpen, setIsOpen] = useState(false)
 
+  // Handle browser back button
+  useEffect(() => {
+    if (isOpen) {
+      // Push a new state when sidebar opens
+      window.history.pushState({ wishlistOpen: true }, '')
+
+      // Listen for popstate (back button press)
+      const handlePopState = (event) => {
+        if (isOpen) {
+          setIsOpen(false)
+        }
+      }
+
+      window.addEventListener('popstate', handlePopState)
+
+      // Cleanup listener
+      return () => {
+        window.removeEventListener('popstate', handlePopState)
+      }
+    }
+  }, [isOpen])
+
+  // Close sidebar function - also handles history
+  const closeSidebar = () => {
+    // If sidebar is open and we have a history state, go back
+    if (window.history.state && window.history.state.wishlistOpen) {
+      window.history.back()
+    }
+    setIsOpen(false)
+  }
+
+  // Open sidebar function
+  const openSidebar = () => {
+    setIsOpen(true)
+  }
+
   const handleAddAllToCart = () => {
-    // Add each wishlist item to cart with a default size (you may want to handle size selection differently)
     wishlist.forEach(item => {
-      // Assuming items have a sizes array, pick the first available size
       const defaultSize = item.sizes ? item.sizes[0] : 'M'
       addToCart({ ...item, selectedSize: defaultSize })
     })
-    // Optionally clear wishlist after adding to cart
-    // clearWishlist()
   }
 
   const handleAddSingleToCart = (item) => {
     const defaultSize = item.sizes ? item.sizes[0] : 'M'
     addToCart({ ...item, selectedSize: defaultSize })
-    // Optionally remove from wishlist after adding to cart
-    // removeFromWishlist(item.id)
   }
 
   return (
@@ -30,7 +60,7 @@ function WishlistSidebar() {
       {/* Floating Button */}
       <button
         className={`wishlist-fab ${isOpen ? 'open' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={openSidebar}
         aria-label="Open wishlist"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -44,7 +74,7 @@ function WishlistSidebar() {
       {/* Sidebar Overlay */}
       <div
         className={`wishlist-overlay ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen(false)}
+        onClick={closeSidebar}
       />
 
       {/* Sidebar */}
@@ -53,7 +83,7 @@ function WishlistSidebar() {
           <h2>WISHLIST</h2>
           <button
             className="close-btn"
-            onClick={() => setIsOpen(false)}
+            onClick={closeSidebar}
             aria-label="Close wishlist"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -80,7 +110,7 @@ function WishlistSidebar() {
                   <div className="item-content">
                     <h4>{item.name}</h4>
                     <p className="item-price">{item.price}</p>
-                    <button 
+                    <button
                       className="add-to-cart-btn"
                       onClick={() => handleAddSingleToCart(item)}
                     >

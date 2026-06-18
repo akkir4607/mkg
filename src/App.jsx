@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { createContext, useState, useEffect } from 'react'
 
 import WishlistSidebar from './components/WishlistSidebar.jsx'
-import Footer from './components/Footer.jsx'
 import Preloader from './components/Preloader.jsx'
 
 import Front from './pages/Front.jsx'
@@ -135,7 +134,7 @@ function App() {
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/term" element={<Term />} />
                 </Routes>
-                <Footer />
+                {/* Footer removed from here - add it manually to pages that need it */}
               </div>
             </Router>
           </CartContext.Provider>

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { WishlistContext } from '../App';
 import './Discover.css';
 import ProductDetail from './ProductDetail';
+import Navbar from '../components/Navbar';
 import image6 from '../images/121.jpg';
 import image7 from '../images/120.jpg';
 import image5 from '../images/122.jpg';
@@ -293,6 +294,8 @@ function Discover() {
 
   return (
     <div className="discover-container">
+      <Navbar />
+
       <div
         ref={bannerRef}
         className={`discover-banner ${isVisible ? 'visible' : ''}`}

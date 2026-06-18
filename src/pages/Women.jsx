@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { WishlistContext } from '../App';
 import './Women.css';
 import ProductDetail from './ProductDetail';
+import Navbar from '../components/Navbar';
 import image1 from '../images/1.jpg';
 import image2 from '../images/2.jpg';
 import image3 from '../images/3.jpg';
@@ -245,6 +246,8 @@ function Women() {
 
   return (
     <div className="women-container">
+      <Navbar />
+
       <div className="women-section-header">
         <h1 className="section-title">FRESH N LOUD</h1>
       </div>
