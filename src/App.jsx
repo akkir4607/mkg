@@ -13,6 +13,8 @@ import Support from './pages/Support.jsx'
 import Men from './pages/Men.jsx'
 import Contact from './pages/Contact.jsx'
 import Login from './pages/Login.jsx'
+import Admin from './pages/Admin.jsx'
+
 import Order from './pages/Order.jsx'
 import FAQ from './pages/Faq.jsx'
 import Term from './pages/term.jsx'
@@ -130,6 +132,8 @@ function App() {
                   <Route path="/men" element={<Men />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/admin" element={<Admin />} />
+
                   <Route path="/order" element={<Order />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/term" element={<Term />} />

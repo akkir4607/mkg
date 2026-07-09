@@ -1,13 +1,13 @@
 // Front.jsx
 import { useState } from 'react'
 import './Front.css'
-import bannerImage from '../images/512.jpg'
+import bannerImage from '../images/2002.png'
 import image6 from '../images/5.jpg'
 import Women from './Women'
 import Men from './Men'
 import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
-import image7 from '../images/507.jpeg'
+import image7 from '../images/2000.jpeg'
 import video515 from '../images/515.mp4'
 
 function Front() {
