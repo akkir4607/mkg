@@ -1,8 +1,18 @@
+// Navbar.jsx
 import { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../App';
 import ShoppingBag from "./ShoppingBag";
 import './Navbar.css';
+
+const CATEGORIES = [
+  { label: 'T-Shirts', path: '/category/tshirts' },
+  { label: 'Jeans', path: '/category/jeans' },
+  { label: 'Lowers', path: '/category/lowers' },
+  { label: 'Shirts', path: '/category/shirts' },
+  { label: 'Jackets', path: '/category/jackets' },
+  { label: 'Accessories', path: '/category/accessories' },
+];
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,14 +30,16 @@ function Navbar() {
   const isHomePage = location.pathname === '/';
 
   useEffect(() => {
+    if (scrolled) return;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 80);
+      if (window.scrollY > 80) {
+        setScrolled(true);
+      }
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [scrolled]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -55,7 +67,6 @@ function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [isMenuOpen, isSearchOpen]);
 
-  // Close menu on route change
   useEffect(() => {
     setIsMenuOpen(false);
     setIsSearchOpen(false);
@@ -81,7 +92,6 @@ function Navbar() {
     }
   };
 
-  // Determine if navbar should show full controls
   const showNavControls = !isHomePage || scrolled || isMenuOpen;
 
   return (
@@ -89,12 +99,27 @@ function Navbar() {
       {/* Hero Logo - Only on homepage, center of viewport */}
       {isHomePage && (
         <div className={`hero-logo ${scrolled ? 'hero-logo--hidden' : ''}`}>
-          <h1>LOUDLY WORN</h1>
-          <div className="hero-scroll-hint">
-            <span>Scroll to explore</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
-            </svg>
+          <div className="hero-logo__inner">
+            <h1 className="hero-logo__title">LOUDLY WORN</h1>
+            <div className="hero-logo__divider" />
+            <nav className="hero-categories" aria-label="Shop categories">
+              {CATEGORIES.map((cat, i) => (
+                <Link
+                  key={cat.path}
+                  to={cat.path}
+                  className="hero-category-link"
+                  style={{ animationDelay: `${1.0 + i * 0.09}s` }}
+                >
+                  {cat.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="hero-scroll-hint">
+              <span>Scroll to explore</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+              </svg>
+            </div>
           </div>
         </div>
       )}
@@ -206,6 +231,22 @@ function Navbar() {
           </div>
         </div>
 
+        {/* Category Bar — sits below navbar, appears on scroll */}
+        <div className={`nav-category-bar ${showNavControls ? 'nav-category-bar--visible' : ''}`}>
+          <div className="nav-category-bar__inner">
+            {CATEGORIES.map((cat, i) => (
+              <Link
+                key={cat.path}
+                to={cat.path}
+                className="nav-category-bar__link"
+                style={{ transitionDelay: showNavControls ? `${0.08 + i * 0.04}s` : '0s' }}
+              >
+                {cat.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Search Overlay */}
         <div className={`search-overlay ${isSearchOpen ? 'search-overlay--open' : ''}`}>
           <div className="search-overlay__inner">
@@ -231,43 +272,65 @@ function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile / Main Menu */}
         <div className={`mobile-menu ${isMenuOpen ? 'mobile-menu--open' : ''}`}>
-          <div className="mobile-menu__links">
-            <Link to="/" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.08s' }}>HOME</Link>
-            <a href="/contact" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.14s' }}>CONTACT</a>
+          <div className="mobile-menu__scroll">
+            <div className="mobile-menu__links">
+              <Link to="/" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.06s' }}>HOME</Link>
 
-            {user ? (
-              <>
-                <div className="mobile-menu__divider" style={{ animationDelay: '0.2s' }}/>
-                <div className="mobile-menu__user" style={{ animationDelay: '0.22s' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                  <span>{user.name}</span>
-                </div>
-                <a href="#profile" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.26s' }}>MY PROFILE</a>
-                <a href="#orders" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.3s' }}>MY ORDERS</a>
-                <button className="mobile-menu__link mobile-menu__link--danger" onClick={() => { closeMenu(); handleLogout(); }} style={{ animationDelay: '0.34s' }}>
-                  LOGOUT
-                </button>
-              </>
-            ) : (
-              <Link to="/login" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: '0.2s' }}>LOG IN</Link>
-            )}
+              <div className="mobile-menu__divider" style={{ animationDelay: '0.1s' }}/>
 
-            <div className="mobile-menu__divider" style={{ animationDelay: '0.4s' }}/>
-            <button
-              onClick={() => { closeMenu(); toggleCart(); }}
-              className="mobile-menu__link mobile-menu__link--bag"
-              style={{ animationDelay: '0.44s' }}
-            >
-              SHOPPING BAG [{getCartCount()}]
-            </button>
+              <p className="mobile-menu__label" style={{ animationDelay: '0.12s' }}>Shop by Category</p>
+              {CATEGORIES.map((cat, i) => (
+                <Link
+                  key={cat.path}
+                  to={cat.path}
+                  className="mobile-menu__link mobile-menu__link--category"
+                  onClick={closeMenu}
+                  style={{ animationDelay: `${0.16 + i * 0.035}s` }}
+                >
+                  {cat.label}
+                </Link>
+              ))}
+
+              <div className="mobile-menu__divider" style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.02}s` }}/>
+
+              <a href="/contact" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.06}s` }}>CONTACT</a>
+
+              {user ? (
+                <>
+                  <div className="mobile-menu__divider" style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.1}s` }}/>
+                  <div className="mobile-menu__user" style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.12}s` }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>{user.name}</span>
+                  </div>
+                  <a href="#profile" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.16}s` }}>MY PROFILE</a>
+                  <a href="#orders" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.2}s` }}>MY ORDERS</a>
+                  <button className="mobile-menu__link mobile-menu__link--danger" onClick={() => { closeMenu(); handleLogout(); }} style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.24}s` }}>
+                    LOGOUT
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="mobile-menu__link" onClick={closeMenu} style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.1}s` }}>LOG IN</Link>
+              )}
+
+              <div className="mobile-menu__divider" style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.3}s` }}/>
+              <button
+                onClick={() => { closeMenu(); toggleCart(); }}
+                className="mobile-menu__link mobile-menu__link--bag"
+                style={{ animationDelay: `${0.16 + CATEGORIES.length * 0.035 + 0.34}s` }}
+              >
+                SHOPPING BAG [{getCartCount()}]
+              </button>
+            </div>
           </div>
         </div>
       </nav>
+
+      {!isHomePage && <div className="navbar-spacer" aria-hidden="true" />}
 
       <ShoppingBag isOpen={isCartOpen} onClose={toggleCart} />
     </>

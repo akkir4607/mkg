@@ -1,6 +1,7 @@
 import React, {
   useState, useEffect, useRef, useContext, useCallback
 } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CartContext, WishlistContext } from '../App';
 import './ProductDetail.css';
 
@@ -67,6 +68,7 @@ const ProductDetail = ({ product, onClose }) => {
   const isClosingRef = useRef(false);
   const didPushState = useRef(false);
 
+  const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
   const { toggleWishlist, isInWishlist } = useContext(WishlistContext);
 
@@ -174,8 +176,36 @@ const ProductDetail = ({ product, onClose }) => {
     }, 1600);
   };
 
+  /* ── Buy Now: add to cart then jump straight to the bag ── */
+  const handleBuyNow = () => {
+    if (product.sizes?.length && !selectedSize) {
+      alert('Please select a size');
+      return;
+    }
+
+    addToCart({ ...product, selectedColor }, selectedSize || 'OS');
+    document.body.style.overflow = '';
+    // NOTE: adjust this path if your ShoppingBag route is named differently
+    navigate('/shopping-bag');
+  };
+
   const handleThumbClick = (i) => {
     setActiveImg(i);
+    startTimer();
+  };
+
+  /* ── Manual image arrows ── */
+  const goPrevImg = (e) => {
+    e.stopPropagation();
+    if (total <= 1) return;
+    setActiveImg(prev => (prev - 1 + total) % total);
+    startTimer();
+  };
+
+  const goNextImg = (e) => {
+    e.stopPropagation();
+    if (total <= 1) return;
+    setActiveImg(prev => (prev + 1) % total);
     startTimer();
   };
 
@@ -190,6 +220,27 @@ const ProductDetail = ({ product, onClose }) => {
     <div className={`lv-page ${isActive ? 'active' : ''}`}>
       {/* ══ LEFT — Image hero ══ */}
       <div className="lv-left" ref={heroRef}>
+        {/* Back button — always visible, top-left, works on desktop & mobile */}
+        <button
+          className="lv-back-btn"
+          onClick={handleClose}
+          aria-label="Go back"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+        </button>
+
         <div className="lv-image-stack">
           {images.map((src, i) => (
             <div
@@ -204,6 +255,29 @@ const ProductDetail = ({ product, onClose }) => {
             </div>
           ))}
         </div>
+
+        {total > 1 && (
+          <>
+            <button
+              className="lv-img-nav-arrow left"
+              onClick={goPrevImg}
+              aria-label="Previous image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              className="lv-img-nav-arrow right"
+              onClick={goNextImg}
+              aria-label="Next image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </>
+        )}
 
         {total > 1 && (
           <div className="lv-counter">
@@ -324,52 +398,76 @@ const ProductDetail = ({ product, onClose }) => {
             </div>
           )}
 
-          <button
-            className={`lv-cta ${showSuccess ? 'success' : ''}`}
-            onClick={handleAddToCart}
-            disabled={showSuccess}
-          >
-            <span className="lv-cta-text">
-              {showSuccess ? (
-                <>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Added — Going back…
-                </>
-              ) : (
-                <>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <path d="M16 10a4 4 0 01-8 0" />
-                  </svg>
-                  Add to Bag
-                </>
+          <div className="lv-cta-row">
+            <button
+              className={`lv-cta ${showSuccess ? 'success' : ''}`}
+              onClick={handleAddToCart}
+              disabled={showSuccess}
+            >
+              <span className="lv-cta-text">
+                {showSuccess ? (
+                  <>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Added — Going back…
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 01-8 0" />
+                    </svg>
+                    Add to Bag
+                  </>
+                )}
+              </span>
+              {showSuccess && (
+                <span className="lv-cta-progress" aria-hidden="true" />
               )}
-            </span>
-            {showSuccess && (
-              <span className="lv-cta-progress" aria-hidden="true" />
-            )}
-          </button>
+            </button>
+
+            <button
+              className="lv-buy-now"
+              onClick={handleBuyNow}
+              disabled={showSuccess}
+            >
+              <span className="lv-cta-text">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M13 2L3 14h7l-1 8 11-14h-7l1-6z" />
+                </svg>
+                Buy Now
+              </span>
+            </button>
+          </div>
 
           <p className="lv-concierge">
             Our Digital Concierge is available if you have any question on this

@@ -12,7 +12,7 @@ const products = [
   {
     id: 'men-1',
     name: 'CLASSIC OXFORD SHOES',
-    price: '₹ 6,950.00',
+    price: '₹ 2,950.00',
     image: image1,
     description: 'The quintessential formal shoe. Crafted from premium full-grain leather with a closed lacing system for a sleek, sophisticated silhouette.',
     sizes: ['UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11']
@@ -44,10 +44,18 @@ const products = [
 ];
 
 const ProductCard = ({ product, onProductClick, index }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible]       = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering]     = useState(false);
   const cardRef = useRef(null);
   const { toggleWishlist, isInWishlist } = useContext(WishlistContext);
+
+  // Uses product.images if present (array), otherwise falls back to the single product.image.
+  // Add an `images: [imgA, imgB, ...]` array to any product to unlock hover-crossfade + arrows.
+  const images = product.images && product.images.length > 0
+    ? product.images
+    : [product.image];
+  const hasMultiple = images.length > 1;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -70,6 +78,17 @@ const ProductCard = ({ product, onProductClick, index }) => {
     };
   }, [index]);
 
+  // Crossfade to the 2nd photo on hover, fade back on mouse-leave
+  useEffect(() => {
+    if (!hasMultiple) return;
+    setCurrentIndex(isHovering ? 1 : 0);
+  }, [isHovering, hasMultiple]);
+
+  const handleArrow = (e, dir) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + dir + images.length) % images.length);
+  };
+
   const handleClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const clickPosition = {
@@ -88,16 +107,45 @@ const ProductCard = ({ product, onProductClick, index }) => {
     <div 
       ref={cardRef}
       className={`product-card ${isVisible ? 'visible' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
       <div className="product-image-wrapper" onClick={handleClick}>
         <div className="image-overlay"></div>
-        <img 
-          src={product.image} 
-          alt={product.name}
-          className={`product-img ${isHovered ? 'hovered' : ''}`}
-        />
+
+        {images.map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            alt={product.name}
+            className={`product-img ${i === currentIndex ? 'active' : ''}`}
+            loading={i === 0 ? 'eager' : 'lazy'}
+          />
+        ))}
+
+        {hasMultiple && (
+          <>
+            <button
+              className="product-nav-arrow left"
+              onClick={(e) => handleArrow(e, -1)}
+              aria-label="Previous image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              className="product-nav-arrow right"
+              onClick={(e) => handleArrow(e, 1)}
+              aria-label="Next image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </>
+        )}
+
         <button className="quick-add-btn">
           <span className="plus-icon">+</span>
         </button>

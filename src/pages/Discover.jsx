@@ -38,21 +38,24 @@ import image72 from '../images/588.jpeg';
 import image73 from '../images/589.jpeg';
 import image74 from '../images/590.jpeg';
 
-
-
 import editImage1 from '../images/121.jpg';
 import editImage2 from '../images/131.jpg';
 import editImage3 from '../images/132.jpg';
 
-
 // ProductCard Component with enhanced animations
 const ProductCard = ({ product, onProductClick, index }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible]       = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering]     = useState(false);
   const cardRef = useRef(null);
   const { toggleWishlist, isInWishlist } = useContext(WishlistContext);
 
   const inWishlist = isInWishlist(product.id);
+
+  const images = product.images && product.images.length > 0
+    ? product.images
+    : [product.image];
+  const hasMultiple = images.length > 1;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -68,6 +71,17 @@ const ProductCard = ({ product, onProductClick, index }) => {
     return () => { if (cardRef.current) observer.unobserve(cardRef.current); };
   }, [index]);
 
+  // Crossfade to the 2nd photo on hover, fade back on mouse-leave
+  useEffect(() => {
+    if (!hasMultiple) return;
+    setCurrentIndex(isHovering ? 1 : 0);
+  }, [isHovering, hasMultiple]);
+
+  const handleArrow = (e, dir) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + dir + images.length) % images.length);
+  };
+
   const handleClick = () => {
     onProductClick(product);
   };
@@ -81,16 +95,45 @@ const ProductCard = ({ product, onProductClick, index }) => {
     <div
       ref={cardRef}
       className={`product-card ${isVisible ? 'visible' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
       <div className="product-image-wrapper" onClick={handleClick}>
         <div className="image-overlay"></div>
-        <img
-          src={product.image}
-          alt={product.name}
-          className={`product-img ${isHovered ? 'hovered' : ''}`}
-        />
+
+        {images.map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            alt={product.name}
+            className={`product-img ${i === currentIndex ? 'active' : ''}`}
+            loading={i === 0 ? 'eager' : 'lazy'}
+          />
+        ))}
+
+        {hasMultiple && (
+          <>
+            <button
+              className="product-nav-arrow left"
+              onClick={(e) => handleArrow(e, -1)}
+              aria-label="Previous image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              className="product-nav-arrow right"
+              onClick={(e) => handleArrow(e, 1)}
+              aria-label="Next image"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </>
+        )}
+
         <button className="quick-add-btn" onClick={handleClick}>
           <span className="plus-icon">+</span>
         </button>
@@ -233,7 +276,6 @@ const editItems = [
   { id: 2, title: 'EVENING ELEGANCE', subtitle: 'For the golden hour', image: editImage2 },
   { id: 3, title: 'ESSENTIAL LAYERS', subtitle: 'Curated comfort', image: editImage3 },
 ];
-
 
 function Discover() {
   const [selectedProduct, setSelectedProduct] = useState(null);

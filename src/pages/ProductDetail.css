@@ -128,6 +128,99 @@
   filter: drop-shadow(0 36px 72px rgba(0, 0, 0, 0.16));
 }
 
+/* ── Back button (top-left, always visible — desktop & mobile) ── */
+.lv-back-btn {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  z-index: 10;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(10, 10, 10, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lv-black);
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition:
+    background 0.3s var(--ease-smooth),
+    transform 0.35s var(--ease-out-expo),
+    box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.lv-back-btn:hover {
+  background: var(--lv-black);
+  color: #fff;
+  transform: translate3d(-2px, 0, 0) scale(1.05);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+.lv-back-btn:active {
+  transform: translate3d(-1px, 0, 0) scale(0.97);
+}
+
+/* ── Image nav arrows (prev / next) ── */
+.lv-img-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(10, 10, 10, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lv-black);
+  cursor: pointer;
+  opacity: 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition:
+    opacity 0.35s var(--ease-smooth),
+    background 0.3s var(--ease-smooth),
+    transform 0.35s var(--ease-out-expo);
+  will-change: opacity, transform;
+}
+
+.lv-img-nav-arrow.left  { left: 24px; }
+.lv-img-nav-arrow.right { right: 24px; }
+
+.lv-img-nav-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.lv-left:hover .lv-img-nav-arrow {
+  opacity: 1;
+}
+
+.lv-img-nav-arrow:hover {
+  background: var(--lv-black);
+  color: #fff;
+}
+
+.lv-img-nav-arrow.left:hover  { transform: translateY(-50%) translate3d(-2px, 0, 0) scale(1.06); }
+.lv-img-nav-arrow.right:hover { transform: translateY(-50%) translate3d(2px, 0, 0) scale(1.06); }
+
+/* Touch devices: no hover, keep arrows softly visible & tappable */
+@media (hover: none) {
+  .lv-img-nav-arrow {
+    opacity: 0.85;
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* Counter */
 .lv-counter {
   position: absolute;
@@ -447,7 +540,22 @@
   border-color: var(--lv-black);
 }
 
-/* CTA */
+/* ── CTA row: Add to Bag + Buy Now side by side ── */
+.lv-cta-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 28px;
+}
+
+.lv-cta-row .lv-cta,
+.lv-cta-row .lv-buy-now {
+  flex: 1 1 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* CTA — Add to Bag (solid black) */
 .lv-cta {
   width: 100%;
   padding: 20px;
@@ -460,8 +568,6 @@
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.4px;
-  margin-top: 12px;
-  margin-bottom: 28px;
   position: relative;
   overflow: hidden;
   transition:
@@ -506,6 +612,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .lv-cta.success {
@@ -519,6 +626,45 @@
   0%   { transform: scale(1); }
   40%  { transform: scale(1.025); }
   100% { transform: scale(1); }
+}
+
+/* CTA — Buy Now (outlined, inverts on hover) */
+.lv-buy-now {
+  width: 100%;
+  padding: 20px;
+  background: var(--lv-bg);
+  color: var(--lv-black);
+  border: 1.5px solid var(--lv-black);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--lv-font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 0.35s var(--ease-smooth),
+    color 0.35s var(--ease-smooth),
+    transform 0.3s var(--ease-out-expo),
+    box-shadow 0.3s var(--ease-smooth);
+  will-change: transform;
+}
+
+.lv-buy-now:hover:not(:disabled) {
+  background: var(--lv-black);
+  color: #fff;
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 10px 30px rgba(10, 10, 10, 0.14);
+}
+
+.lv-buy-now:active:not(:disabled) {
+  transform: translate3d(0, 0, 0);
+}
+
+.lv-buy-now:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
 
 /* Concierge */
@@ -794,6 +940,21 @@
 
   .lv-counter { bottom: 26px; left: 26px; }
   .lv-progress { bottom: 24px; right: 26px; }
+
+  .lv-back-btn {
+    top: 22px;
+    left: 22px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .lv-img-nav-arrow {
+    width: 42px;
+    height: 42px;
+  }
+
+  .lv-img-nav-arrow.left  { left: 18px; }
+  .lv-img-nav-arrow.right { right: 18px; }
 }
 
 /* Tablet */
@@ -857,7 +1018,13 @@
     font-size: 12px;
   }
 
-  .lv-cta {
+  .lv-cta-row {
+    gap: 8px;
+    flex-direction: column;
+  }
+
+  .lv-cta,
+  .lv-buy-now {
     padding: 18px;
     font-size: 13px;
   }
@@ -872,6 +1039,26 @@
   .lv-counter { left: 20px; font-size: 10px; }
   .lv-progress { right: 20px; gap: 5px; }
   .lv-progress-bar { width: 28px; }
+
+  .lv-back-btn {
+    top: 16px;
+    left: 16px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .lv-img-nav-arrow {
+    width: 38px;
+    height: 38px;
+  }
+
+  .lv-img-nav-arrow svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .lv-img-nav-arrow.left  { left: 14px; }
+  .lv-img-nav-arrow.right { right: 14px; }
 }
 
 /* Small mobile */
@@ -933,13 +1120,7 @@
     image-rendering: -webkit-optimize-contrast;
   }
 }
-/* ── NEW: Success Progress Bar & Updates ───────────────────── */
-
-/* Ensure the parent button is relative so the bar positions correctly */
-.lv-cta {
-  position: relative; 
-  overflow: hidden;
-}
+/* ── Success Progress Bar ───────────────────── */
 
 /* The draining progress bar */
 .lv-cta-progress {

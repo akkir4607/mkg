@@ -1,3 +1,4 @@
+// Women.jsx
 import { useState, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { WishlistContext } from '../App';
@@ -46,15 +47,6 @@ import image51 from '../images/567.jpeg';
 import image52 from '../images/568.jpeg';
 import image53 from '../images/569.jpeg';
 
-
-
-
-
-
-
-
-
-
 const products = [
   {
     id: 'women-1',
@@ -65,9 +57,9 @@ const products = [
       'Flannel overshirt in cotton with bones appliques with raw hem and button-down closure.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
-      { name: 'Black',  value: '#000000' },
-      { name: 'Red',    value: '#DC2626' },
-      { name: 'Brown',  value: '#92400E' },
+      { name: 'Black', value: '#000000' },
+      { name: 'Red', value: '#DC2626' },
+      { name: 'Brown', value: '#92400E' },
     ],
   },
   {
@@ -80,7 +72,7 @@ const products = [
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
-      { name: 'Red',   value: '#DC2626' },
+      { name: 'Red', value: '#DC2626' },
       { name: 'Beige', value: '#D4A574' },
     ],
   },
@@ -94,7 +86,7 @@ const products = [
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
-      { name: 'Navy',  value: '#1E3A8A' },
+      { name: 'Navy', value: '#1E3A8A' },
       { name: 'Brown', value: '#92400E' },
     ],
   },
@@ -108,10 +100,10 @@ const products = [
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
-      { name: 'Red',   value: '#DC2626' },
+      { name: 'Red', value: '#DC2626' },
       { name: 'White', value: '#F8F8F8' },
     ],
-    },
+  },
   {
     id: 'women-5',
     name: 'LEATHER SMART DECK SHOES',
@@ -122,10 +114,10 @@ const products = [
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
-      { name: 'Red',   value: '#DC2626' },
+      { name: 'Red', value: '#DC2626' },
       { name: 'White', value: '#F8F8F8' },
     ],
-    },
+  },
   {
     id: 'women-6',
     name: 'LEATHER SMART DECK SHOES',
@@ -136,10 +128,10 @@ const products = [
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
-      { name: 'Red',   value: '#DC2626' },
+      { name: 'Red', value: '#DC2626' },
       { name: 'White', value: '#F8F8F8' },
     ],
-    },
+  },
   {
     id: 'women-7',
     name: 'LEATHER SMART DECK SHOES',
@@ -150,10 +142,10 @@ const products = [
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
-      { name: 'Red',   value: '#DC2626' },
+      { name: 'Red', value: '#DC2626' },
       { name: 'White', value: '#F8F8F8' },
     ],
-    },
+  },
   {
     id: 'women-8',
     name: 'LEATHER SMART DECK SHOES',
@@ -164,72 +156,159 @@ const products = [
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
-      { name: 'Red',   value: '#DC2626' },
+      { name: 'Red', value: '#DC2626' },
       { name: 'White', value: '#F8F8F8' },
     ],
-    
   },
-  
 ];
 
-/* ─── Product card ──────────────────────────────────────── */
+/* ─── Product Card ──────────────────────────────────────── */
 const ProductCard = ({ product, onProductClick, index }) => {
-  const [isHovered, setIsHovered]     = useState(false);
-  const [isVisible, setIsVisible]     = useState(false);
+  const [isVisible, setIsVisible]       = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering]     = useState(false);
   const cardRef = useRef(null);
   const { toggleWishlist, isInWishlist } = useContext(WishlistContext);
 
+  const images =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.image];
+  const hasMultiple = images.length > 1;
+
+  /* Intersection observer - staggered entrance */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setTimeout(() => setIsVisible(true), index * 100); },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setIsVisible(true), index * 100);
+        }
+      },
       { threshold: 0.1 }
     );
     if (cardRef.current) observer.observe(cardRef.current);
-    return () => { if (cardRef.current) observer.unobserve(cardRef.current); };
+    return () => {
+      if (cardRef.current) observer.unobserve(cardRef.current);
+    };
   }, [index]);
+
+  /* Crossfade to 2nd photo on hover */
+  useEffect(() => {
+    if (!hasMultiple) return;
+    setCurrentIndex(isHovering ? 1 : 0);
+  }, [isHovering, hasMultiple]);
+
+  const handleArrow = (e, dir) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + dir + images.length) % images.length);
+  };
+
+  const inWishlist = isInWishlist(product.id);
 
   return (
     <div
       ref={cardRef}
       className={`product-card ${isVisible ? 'visible' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="product-image-wrapper" onClick={() => onProductClick(product)}>
+      {/* ── Image Wrapper ── */}
+      <div
+        className="product-image-wrapper"
+        onClick={() => onProductClick(product)}
+      >
         <div className="image-overlay" />
-        <img
-          src={product.images[0]}
-          alt={product.name}
-          className={`product-img ${isHovered ? 'hovered' : ''}`}
-        />
-        <button className="quick-add-btn">
+
+        {/* All images stacked, only active one is visible */}
+        {images.map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            alt={product.name}
+            className={`product-img ${i === currentIndex ? 'active' : ''}`}
+            loading={i === 0 ? 'eager' : 'lazy'}
+          />
+        ))}
+
+        {/* Navigation arrows */}
+        {hasMultiple && (
+          <>
+            <button
+              className="product-nav-arrow left"
+              onClick={(e) => handleArrow(e, -1)}
+              aria-label="Previous image"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <button
+              className="product-nav-arrow right"
+              onClick={(e) => handleArrow(e, 1)}
+              aria-label="Next image"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Quick add button */}
+        <button
+          className="quick-add-btn"
+          onClick={(e) => e.stopPropagation()}
+          aria-label="Quick add"
+        >
           <span className="plus-icon">+</span>
+        </button>
+
+        {/* Wishlist icon - inside image wrapper for correct stacking */}
+        <button
+          className={`wishlist-icon ${inWishlist ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleWishlist(product);
+          }}
+          aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill={inWishlist ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
         </button>
       </div>
 
+      {/* ── Product Info ── */}
       <div className="product-info">
         <h3 className="product-title">{product.name}</h3>
         <p className="product-price">{product.price}</p>
       </div>
-
-      <button
-        className={`wishlist-icon ${isInWishlist(product.id) ? 'active' : ''}`}
-        onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-        aria-label="Add to wishlist"
-      >
-        <svg
-          width="16" height="16" viewBox="0 0 24 24"
-          fill={isInWishlist(product.id) ? 'currentColor' : 'none'}
-          stroke="currentColor" strokeWidth="1.5"
-        >
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-        </svg>
-      </button>
     </div>
   );
 };
 
-/* ─── Women page ────────────────────────────────────────── */
+/* ─── Women Page ────────────────────────────────────────── */
 function Women() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [headerVisible, setHeaderVisible]     = useState(false);
@@ -237,21 +316,27 @@ function Women() {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setHeaderVisible(true); },
+      ([entry]) => {
+        if (entry.isIntersecting) setHeaderVisible(true);
+      },
       { threshold: 0.3 }
     );
     if (headerRef.current) obs.observe(headerRef.current);
-    return () => { if (headerRef.current) obs.unobserve(headerRef.current); };
+    return () => {
+      if (headerRef.current) obs.unobserve(headerRef.current);
+    };
   }, []);
 
   return (
     <div className="women-container">
       <Navbar />
 
+      {/* Section heading */}
       <div className="women-section-header">
         <h1 className="section-title">FRESH N LOUD</h1>
       </div>
 
+      {/* Products grid */}
       <div className="products-grid">
         {products.map((product, index) => (
           <ProductCard
@@ -263,15 +348,19 @@ function Women() {
         ))}
       </div>
 
+      {/* Animated footer header */}
       <div
         ref={headerRef}
         className={`women-header ${headerVisible ? 'visible' : ''}`}
       >
         <div className="header-line" />
-        <Link to="/discover" className="women-title">Explore the LOUD</Link>
+        <Link to="/discover" className="women-title">
+          Explore the LOUD
+        </Link>
         <p className="women-subtitle">Timeless elegance in every step</p>
       </div>
 
+      {/* Product detail modal */}
       {selectedProduct && (
         <ProductDetail
           product={selectedProduct}
