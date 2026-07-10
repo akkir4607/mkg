@@ -14,11 +14,10 @@ import Men from './pages/Men.jsx'
 import Contact from './pages/Contact.jsx'
 import Login from './pages/Login.jsx'
 import Admin from './pages/Admin.jsx'
-
-
 import Order from './pages/Order.jsx'
 import FAQ from './pages/Faq.jsx'
 import Term from './pages/term.jsx'
+import CartPage from './pages/CartPage.jsx'
 
 export const WishlistContext = createContext()
 export const CartContext = createContext()
@@ -31,6 +30,7 @@ function App() {
     return sessionStorage.getItem('preloaderShown') !== 'true'
   })
 
+  // ── Lock / unlock body scroll during preloader ──────────
   useEffect(() => {
     if (isLoading) {
       document.body.classList.add('preloader-active')
@@ -47,6 +47,9 @@ function App() {
     sessionStorage.setItem('preloaderShown', 'true')
   }
 
+  // ══════════════════════════════════════════════
+  // WISHLIST ACTIONS
+  // ══════════════════════════════════════════════
   const toggleWishlist = (product) => {
     setWishlist((prev) => {
       const exists = prev.find((item) => item.id === product.id)
@@ -60,8 +63,13 @@ function App() {
   }
 
   const clearWishlist = () => setWishlist([])
-  const isInWishlist = (productId) => wishlist.some((item) => item.id === productId)
 
+  const isInWishlist = (productId) =>
+    wishlist.some((item) => item.id === productId)
+
+  // ══════════════════════════════════════════════
+  // CART ACTIONS
+  // ══════════════════════════════════════════════
   const addToCart = (product, size) => {
     setCart((prev) => {
       const existingItem = prev.find(
@@ -80,7 +88,9 @@ function App() {
 
   const removeFromCart = (productId, size) => {
     setCart((prev) =>
-      prev.filter((item) => !(item.id === productId && item.selectedSize === size))
+      prev.filter(
+        (item) => !(item.id === productId && item.selectedSize === size)
+      )
     )
   }
 
@@ -102,7 +112,9 @@ function App() {
 
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
-      const price = parseFloat(item.price.replace('₹', '').replace(/,/g, ''))
+      const price = parseFloat(
+        item.price.replace('₹', '').replace(/,/g, '')
+      )
       return total + price * item.quantity
     }, 0)
   }
@@ -111,35 +123,71 @@ function App() {
     return cart.reduce((total, item) => total + item.quantity, 0)
   }
 
+  // ══════════════════════════════════════════════
+  // CONTEXT VALUES
+  // ══════════════════════════════════════════════
+  const wishlistValue = {
+    wishlist,
+    toggleWishlist,
+    removeFromWishlist,
+    clearWishlist,
+    isInWishlist,
+  }
+
+  const cartValue = {
+    cart,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getCartTotal,
+    getCartCount,
+  }
+
+  // ══════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════
   return (
     <>
-      {isLoading && <Preloader onLoadingComplete={handleLoadingComplete} />}
+      {isLoading && (
+        <Preloader onLoadingComplete={handleLoadingComplete} />
+      )}
+
       {!isLoading && (
-        <WishlistContext.Provider
-          value={{ wishlist, toggleWishlist, removeFromWishlist, clearWishlist, isInWishlist }}
-        >
-          <CartContext.Provider
-            value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartCount }}
-          >
+        <WishlistContext.Provider value={wishlistValue}>
+          <CartContext.Provider value={cartValue}>
             <Router>
               <div className="app">
                 <WishlistSidebar />
-                <Routes>
-                  <Route path="/" element={<Front />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/women" element={<Women />} />
-                  <Route path="/support" element={<Support />} />
-                  <Route path="/discover" element={<Discover />} />
-                  <Route path="/men" element={<Men />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/admin" element={<Admin />} />
 
-                  <Route path="/order" element={<Order />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/term" element={<Term />} />
+                <Routes>
+                  {/* ── Main pages ── */}
+                  <Route path="/"           element={<Front />} />
+                  <Route path="/women"      element={<Women />} />
+                  <Route path="/men"        element={<Men />} />
+                  <Route path="/discover"   element={<Discover />} />
+                  <Route path="/support"    element={<Support />} />
+                  <Route path="/contact"    element={<Contact />} />
+
+                  {/* ── Product ── */}
+                  <Route path="/product/:id" element={<ProductDetail />} />
+
+                  {/* ── Cart / Checkout ── */}
+                  <Route path="/cart"       element={<CartPage />} />
+
+                  {/* ── Auth ── */}
+                  <Route path="/login"      element={<Login />} />
+
+                  {/* ── Account ── */}
+                  <Route path="/order"      element={<Order />} />
+
+                  {/* ── Admin ── */}
+                  <Route path="/admin"      element={<Admin />} />
+
+                  {/* ── Info pages ── */}
+                  <Route path="/faq"        element={<FAQ />} />
+                  <Route path="/term"       element={<Term />} />
                 </Routes>
-                {/* Footer removed from here - add it manually to pages that need it */}
               </div>
             </Router>
           </CartContext.Provider>
