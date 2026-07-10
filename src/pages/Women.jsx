@@ -5,10 +5,6 @@ import { WishlistContext } from '../App';
 import './Women.css';
 import ProductDetail from './ProductDetail';
 import Navbar from '../components/Navbar';
-import image1 from '../images/1.jpg';
-import image2 from '../images/2.jpg';
-import image3 from '../images/3.jpg';
-import image4 from '../images/4.jpg';
 import image17 from '../images/500.jpeg';
 import image18 from '../images/501.jpeg';
 import image19 from '../images/502.jpeg';
@@ -66,7 +62,7 @@ const products = [
     name: 'ARTIST SPIRIT TEE (BLACK)',
     price: '₹ 5,950.00',
     images: [image20, image21, image22, image23],
-    description: 'Timeless leather boots designed for comfort and style. Premium craftsmanship with attention to every detail.',
+    description: 'Timeless leather boots designed for comfort and style.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
@@ -79,7 +75,7 @@ const products = [
     name: 'LEATHER WITH MASK DETAIL',
     price: '₹ 8,550.00',
     images: [image24, image25, image26, image27, image28, image29],
-    description: 'Elegant leather moccasins with mask detail. Handcrafted from the finest materials for superior comfort.',
+    description: 'Elegant leather moccasins with mask detail.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
@@ -92,7 +88,7 @@ const products = [
     name: 'LEATHER SMART DECK SHOES',
     price: '₹ 8,550.00',
     images: [image30, image31, image32, image33],
-    description: 'Premium leather smart deck shoes combining style and functionality. Perfect for casual sophistication.',
+    description: 'Premium leather smart deck shoes.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
@@ -105,7 +101,7 @@ const products = [
     name: 'LEATHER SMART DECK SHOES',
     price: '₹ 8,550.00',
     images: [image34, image35, image36, image37, image38],
-    description: 'Premium leather smart deck shoes combining style and functionality. Perfect for casual sophistication.',
+    description: 'Premium leather smart deck shoes.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
@@ -118,7 +114,7 @@ const products = [
     name: 'LEATHER SMART DECK SHOES',
     price: '₹ 8,550.00',
     images: [image39, image40, image41, image42, image43],
-    description: 'Premium leather smart deck shoes combining style and functionality. Perfect for casual sophistication.',
+    description: 'Premium leather smart deck shoes.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
@@ -131,7 +127,7 @@ const products = [
     name: 'LEATHER SMART DECK SHOES',
     price: '₹ 8,550.00',
     images: [image44, image45, image46, image47],
-    description: 'Premium leather smart deck shoes combining style and functionality. Perfect for casual sophistication.',
+    description: 'Premium leather smart deck shoes.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
@@ -144,7 +140,7 @@ const products = [
     name: 'LEATHER SMART DECK SHOES',
     price: '₹ 8,550.00',
     images: [image48, image49, image50, image51, image52, image53],
-    description: 'Premium leather smart deck shoes combining style and functionality. Perfect for casual sophistication.',
+    description: 'Premium leather smart deck shoes.',
     sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10'],
     colors: [
       { name: 'Black', value: '#000000' },
@@ -174,19 +170,21 @@ const useIsTouchDevice = () => {
 
 /* ─── Product Card ─── */
 const ProductCard = ({ product, onProductClick, index }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible]       = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const cardRef = useRef(null);
-  const touchRef = useRef({ x: 0, y: 0, time: 0 });
+  const [isHovering, setIsHovering]     = useState(false);
+  const cardRef       = useRef(null);
+  const touchRef      = useRef({ x: 0, y: 0, time: 0 });
+  const deltaRef      = useRef(0);
+  const swipingRef    = useRef(false);
+  const hoverTimerRef = useRef(null);
   const { toggleWishlist, isInWishlist } = useContext(WishlistContext);
   const isTouch = useIsTouchDevice();
 
-  const images = product.images?.length > 0 ? product.images : [product.image];
+  const images      = product.images?.length > 0 ? product.images : [product.image];
   const hasMultiple = images.length > 1;
 
-  /* Intersection observer */
+  /* ── Intersection observer for fade-in ── */
   useEffect(() => {
     const node = cardRef.current;
     if (!node) return;
@@ -203,70 +201,82 @@ const ProductCard = ({ product, onProductClick, index }) => {
     return () => observer.unobserve(node);
   }, [index]);
 
-  /* Desktop hover → show 2nd image */
+  /* ── Desktop hover → crossfade to 2nd image ── */
   useEffect(() => {
     if (!hasMultiple || isTouch) return;
     setCurrentIndex(isHovering ? 1 : 0);
   }, [isHovering, hasMultiple, isTouch]);
 
-  /* ── Swipe handlers ── */
-  const handleTouchStart = useCallback((e) => {
-    if (!hasMultiple) return;
-    const t = e.touches[0];
-    touchRef.current = { x: t.clientX, y: t.clientY, time: Date.now() };
-    setIsSwiping(false);
-  }, [hasMultiple]);
-
-  const handleTouchMove = useCallback((e) => {
-    if (!hasMultiple) return;
-    const t = e.touches[0];
-    const dx = t.clientX - touchRef.current.x;
-    const dy = t.clientY - touchRef.current.y;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
-      setIsSwiping(true);
-      e.preventDefault();
+  /* ── Pointer enter — mouse only ── */
+  const handlePointerEnter = useCallback((e) => {
+    if (e.pointerType !== 'mouse') return;
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
     }
-  }, [hasMultiple]);
+    setIsHovering(true);
+  }, []);
 
-  const handleTouchEnd = useCallback(() => {
-    if (!hasMultiple) return;
-    const dx = touchRef.current.x
-      ? (event => {
-          // We need the final position — use changedTouches from the native event
-          // But since we stored start, we can compute from the isSwiping state
-        })()
-      : 0;
-    // Simplified: we track in touchMove
-  }, [hasMultiple]);
+  /* ── Pointer leave — mouse only, debounced ── */
+  const handlePointerLeave = useCallback((e) => {
+    if (e.pointerType !== 'mouse') return;
+    hoverTimerRef.current = setTimeout(() => {
+      setIsHovering(false);
+    }, 50);
+  }, []);
 
-  // Better approach: store delta during move
-  const deltaRef = useRef(0);
+  /* ── Cleanup timer on unmount ── */
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
 
+  /* ── Open product detail ── */
+  const openProduct = useCallback(() => {
+    onProductClick(product);
+  }, [onProductClick, product]);
+
+  /* ── Card click (image area) — ignore if swiping ── */
+  const handleCardClick = useCallback((e) => {
+    if (e.target.closest('button')) return;
+    if (swipingRef.current) return;
+    openProduct();
+  }, [openProduct]);
+
+  /* ── Product info area click ── */
+  const handleInfoClick = useCallback(() => {
+    openProduct();
+  }, [openProduct]);
+
+  /* ── Touch start ── */
   const onTouchStart = useCallback((e) => {
     if (!hasMultiple) return;
     const t = e.touches[0];
-    touchRef.current = { x: t.clientX, y: t.clientY, time: Date.now() };
-    deltaRef.current = 0;
-    setIsSwiping(false);
+    touchRef.current   = { x: t.clientX, y: t.clientY, time: Date.now() };
+    deltaRef.current   = 0;
+    swipingRef.current = false;
   }, [hasMultiple]);
 
+  /* ── Touch move ── */
   const onTouchMove = useCallback((e) => {
     if (!hasMultiple) return;
-    const t = e.touches[0];
+    const t  = e.touches[0];
     const dx = t.clientX - touchRef.current.x;
     const dy = t.clientY - touchRef.current.y;
     deltaRef.current = dx;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
-      setIsSwiping(true);
+      swipingRef.current = true;
       e.preventDefault();
     }
   }, [hasMultiple]);
 
+  /* ── Touch end ── */
   const onTouchEnd = useCallback(() => {
     if (!hasMultiple) return;
-    const dx = deltaRef.current;
-    const elapsed = Date.now() - touchRef.current.time;
-    const velocity = Math.abs(dx) / elapsed;
+    const dx        = deltaRef.current;
+    const elapsed   = Date.now() - touchRef.current.time;
+    const velocity  = Math.abs(dx) / elapsed;
     const threshold = velocity > 0.3 ? 15 : 35;
 
     if (Math.abs(dx) > threshold) {
@@ -276,39 +286,30 @@ const ProductCard = ({ product, onProductClick, index }) => {
           : (prev - 1 + images.length) % images.length
       );
     }
+
     deltaRef.current = 0;
-    setTimeout(() => setIsSwiping(false), 60);
+    setTimeout(() => { swipingRef.current = false; }, 80);
   }, [hasMultiple, images.length]);
 
-  /* Side tap for mobile */
-  const handleSideTap = useCallback((dir) => {
-    if (!hasMultiple) return;
-    setCurrentIndex((prev) => (prev + dir + images.length) % images.length);
-  }, [hasMultiple, images.length]);
-
-  /* Desktop arrow */
+  /* ── Desktop arrow nav ── */
   const handleArrow = useCallback((e, dir) => {
     e.stopPropagation();
     setCurrentIndex((prev) => (prev + dir + images.length) % images.length);
   }, [images.length]);
-
-  /* Image click — open detail unless swiping */
-  const handleImageClick = useCallback(() => {
-    if (!isSwiping) onProductClick(product);
-  }, [isSwiping, onProductClick, product]);
 
   const inWishlist = isInWishlist(product.id);
 
   return (
     <div
       ref={cardRef}
-      className={`product-card ${isVisible ? 'visible' : ''}`}
-      onMouseEnter={() => !isTouch && setIsHovering(true)}
-      onMouseLeave={() => !isTouch && setIsHovering(false)}
+      className={`product-card ${isVisible ? 'visible' : ''} ${isHovering ? 'hovering' : ''}`}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
     >
+      {/* ── Image area ── */}
       <div
         className="product-image-wrapper"
-        onClick={handleImageClick}
+        onClick={handleCardClick}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -326,57 +327,52 @@ const ProductCard = ({ product, onProductClick, index }) => {
           />
         ))}
 
-        {/* Desktop: minimal bare arrows */}
+        {/* Desktop arrows */}
         {hasMultiple && !isTouch && (
           <>
             <button
               className="product-nav-arrow left"
               onClick={(e) => handleArrow(e, -1)}
-              aria-label="Previous"
+              aria-label="Previous image"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
             <button
               className="product-nav-arrow right"
               onClick={(e) => handleArrow(e, 1)}
-              aria-label="Next"
+              aria-label="Next image"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
           </>
         )}
 
-        {/* Mobile: invisible side tap zones */}
-        {hasMultiple && isTouch && (
-          <>
-            <button
-              className="touch-zone left"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSideTap(-1);
-              }}
-              aria-label="Previous image"
-            />
-            <button
-              className="touch-zone right"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSideTap(1);
-              }}
-              aria-label="Next image"
-            />
-          </>
-        )}
-
-        {/* Mobile dots */}
+        {/* Mobile swipe dots */}
         {hasMultiple && isTouch && (
           <div className="swipe-dots">
             {images.map((_, i) => (
-              <span key={i} className={`swipe-dot ${i === currentIndex ? 'active' : ''}`} />
+              <span
+                key={i}
+                className={`swipe-dot ${i === currentIndex ? 'active' : ''}`}
+              />
             ))}
           </div>
         )}
@@ -399,13 +395,21 @@ const ProductCard = ({ product, onProductClick, index }) => {
           }}
           aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill={inWishlist ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill={inWishlist ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
         </button>
       </div>
 
-      <div className="product-info">
+      {/* ── Info area ── */}
+      <div className="product-info" onClick={handleInfoClick}>
         <h3 className="product-title">{product.name}</h3>
         <p className="product-price">{product.price}</p>
       </div>
@@ -416,7 +420,7 @@ const ProductCard = ({ product, onProductClick, index }) => {
 /* ─── Women Page ─── */
 function Women() {
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [headerVisible, setHeaderVisible] = useState(false);
+  const [headerVisible, setHeaderVisible]     = useState(false);
   const headerRef = useRef(null);
 
   useEffect(() => {
@@ -454,9 +458,14 @@ function Women() {
         ))}
       </div>
 
-      <div ref={headerRef} className={`women-header ${headerVisible ? 'visible' : ''}`}>
+      <div
+        ref={headerRef}
+        className={`women-header ${headerVisible ? 'visible' : ''}`}
+      >
         <div className="header-line" />
-        <Link to="/discover" className="women-title">Explore the LOUD</Link>
+        <Link to="/discover" className="women-title">
+          Explore the LOUD
+        </Link>
         <p className="women-subtitle">Timeless elegance in every step</p>
       </div>
 
